@@ -21,12 +21,12 @@ export function sortItems(list: CashFlowItem[], key: SortKey): CashFlowItem[] {
       break;
     case "year":
       sorted.sort(
-        (a, b) => new Date(a.startDate).getFullYear() - new Date(b.startDate).getFullYear()
+        (a, b) => new Date(a.startDate).getUTCFullYear() - new Date(b.startDate).getUTCFullYear()
       );
       break;
     case "month":
       sorted.sort(
-        (a, b) => new Date(a.startDate).getMonth() - new Date(b.startDate).getMonth()
+        (a, b) => new Date(a.startDate).getUTCMonth() - new Date(b.startDate).getUTCMonth()
       );
       break;
   }

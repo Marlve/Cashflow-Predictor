@@ -1,4 +1,4 @@
-export type Cycle = "once" | "weekly" | "monthly" | "annual";
+export type Cycle = "weekly" | "monthly" | "annual";
 export type ItemKind = "income" | "bill";
 
 export interface CashFlowItem {
