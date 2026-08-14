@@ -1,9 +1,27 @@
-import { addItemAction, seedAction, setBalanceAction } from "./actions";
-import { getBalanceCheckpoint, getItems, sortItems } from "@/lib/storage";
+import { addItem, getBalanceCheckpoint, getItems, sortItems } from "@/lib/storage";
 import { currentMonthWindow, expandAll } from "@/lib/occurrences";
 import { STARTING_BALANCE, findLocalMinima, walkBalance } from "@/lib/forecast";
+import { sampleItems } from "@/lib/seedData";
+
+import { AddItemForm } from "@/components/add-item-form";
+import { BalanceChart } from "@/components/balance-chart";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { BillsBreakdownChart } from "@/components/bills-breakdown-chart";
+import { ItemsTable } from "@/components/items-table";
+import { OccurrencesTable } from "@/components/occurrences-table";
+import { SectionCards } from "@/components/section-cards";
+import { SetBalanceForm } from "@/components/set-balance-form";
+import { SiteHeader } from "@/components/site-header";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { formatCurrency, formatDate, formatMonthYear } from "@/lib/format";
 
 export default function Home() {
+  // In-memory storage starts empty on every server start — seed it straight
+  // away instead of waiting on a manual "load sample data" click.
+  if (getItems().length === 0) {
+    sampleItems().forEach(addItem);
+  }
+
   const items = sortItems(getItems(), "date");
   const window = currentMonthWindow();
   const allOccurrences = expandAll(getItems(), window);
@@ -19,152 +37,94 @@ export default function Home() {
   const trajectory = walkBalance(occurrences, startingBalance);
   const dips = findLocalMinima(trajectory, startingBalance);
   const balanceByDate = new Map(trajectory.map((point) => [point.date, point.balance]));
+  const lowestDip = dips.reduce<typeof dips[number] | null>(
+    (lowest, dip) => (!lowest || dip.balance < lowest.balance ? dip : lowest),
+    null
+  );
 
   return (
-    <div className="flex flex-col flex-1 items-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex w-full max-w-2xl flex-col gap-8 py-16 px-6">
-        <h1 className="text-2xl font-semibold text-black dark:text-zinc-50">
-          Add cash-flow item
-        </h1>
+    <div className="flex flex-col flex-1 items-center bg-background font-sans">
+      <main className="flex w-full max-w-7xl flex-col gap-6 px-4 py-8 sm:gap-8 sm:px-6 sm:py-12 lg:py-16">
+        <SiteHeader />
 
-        {items.length === 0 && (
-          <form action={seedAction}>
-            <button type="submit" className="rounded border px-4 py-2">
-              Load sample data
-            </button>
-          </form>
-        )}
+        <SectionCards
+          currentBalance={startingBalance}
+          currentBalanceDate={checkpoint?.date ?? null}
+          lowestDip={lowestDip}
+          occurrenceCount={occurrences.length}
+        />
 
-        <form action={addItemAction} className="flex flex-col gap-3">
-          <input name="name" placeholder="Name (e.g. Rent)" required className="border rounded px-3 py-2" />
-          <input name="amount" type="number" step="0.01" placeholder="Amount" required className="border rounded px-3 py-2" />
-          <select name="kind" required className="border rounded px-3 py-2">
-            <option value="income">Income</option>
-            <option value="bill">Bill</option>
-          </select>
-          <select name="cycle" required className="border rounded px-3 py-2">
-            <option value="weekly">Weekly</option>
-            <option value="monthly">Monthly</option>
-            <option value="annual">Annual</option>
-          </select>
-          <input name="startDate" type="date" required className="border rounded px-3 py-2" />
-          <button type="submit" className="rounded bg-foreground text-background px-4 py-2">
-            Add item
-          </button>
-        </form>
+        <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
+          <Card className="md:col-span-2">
+            <CardHeader>
+              <CardTitle>This month</CardTitle>
+              <CardDescription>{formatMonthYear(window.start)}</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <BalanceChart
+                windowStart={window.start}
+                startingBalance={startingBalance}
+                checkpointDate={checkpoint?.date ?? null}
+                trajectory={trajectory}
+                dips={dips}
+              />
+              {dips.length > 0 && (
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Dip date</TableHead>
+                      <TableHead className="text-right">Balance</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {dips.map((dip) => (
+                      <TableRow key={dip.date}>
+                        <TableCell>{formatDate(dip.date)}</TableCell>
+                        <TableCell className="text-right tabular-nums">
+                          {formatCurrency(dip.balance)}
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              )}
+            </CardContent>
+          </Card>
 
-        <div className="flex flex-col gap-2">
-          <h2 className="text-lg font-semibold text-black dark:text-zinc-50">
-            Stored items (sorted by date)
-          </h2>
-          {items.length === 0 && (
-            <p className="text-zinc-500">No items yet.</p>
-          )}
-          <table className="w-full text-left text-sm">
-            <thead>
-              <tr>
-                <th className="border-b py-1">Date</th>
-                <th className="border-b py-1">Name</th>
-                <th className="border-b py-1">Kind</th>
-                <th className="border-b py-1">Cycle</th>
-                <th className="border-b py-1">Amount</th>
-              </tr>
-            </thead>
-            <tbody>
-              {items.map((item) => (
-                <tr key={item.id}>
-                  <td className="py-1">{item.startDate}</td>
-                  <td className="py-1">{item.name}</td>
-                  <td className="py-1">{item.kind}</td>
-                  <td className="py-1">{item.cycle}</td>
-                  <td className="py-1">{item.amount}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+          <Card>
+            <CardHeader>
+              <CardTitle>Bills breakdown</CardTitle>
+              <CardDescription>Biggest bills this month, by amount</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <BillsBreakdownChart occurrences={occurrences} />
+            </CardContent>
+          </Card>
         </div>
 
-        <div className="flex flex-col gap-3">
-          <h2 className="text-lg font-semibold text-black dark:text-zinc-50">
-            Update balance
-          </h2>
-          {checkpoint && (
-            <p className="text-zinc-500">
-              Last checked {checkpoint.date}: {checkpoint.balance}
-            </p>
-          )}
-          <form action={setBalanceAction} className="flex flex-col gap-3">
-            <input
-              name="balance"
-              type="number"
-              step="0.01"
-              placeholder="Current balance"
-              required
-              className="border rounded px-3 py-2"
-            />
-            <button type="submit" className="rounded bg-foreground text-background px-4 py-2">
-              Save today&apos;s balance
-            </button>
-          </form>
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+          <AddItemForm />
+          <SetBalanceForm checkpoint={checkpoint} />
         </div>
 
-        <div className="flex flex-col gap-2">
-          <h2 className="text-lg font-semibold text-black dark:text-zinc-50">
-            Occurrences ({window.start} to {window.end})
-          </h2>
-          {occurrences.length === 0 && (
-            <p className="text-zinc-500">No occurrences in this window.</p>
-          )}
-          <table className="w-full text-left text-sm">
-            <thead>
-              <tr>
-                <th className="border-b py-1">Date</th>
-                <th className="border-b py-1">Name</th>
-                <th className="border-b py-1">Kind</th>
-                <th className="border-b py-1">Cycle</th>
-                <th className="border-b py-1">Amount</th>
-                <th className="border-b py-1">Balance</th>
-              </tr>
-            </thead>
-            <tbody>
-              {occurrences.map((occ, i) => (
-                <tr key={`${occ.itemId}-${occ.date}-${i}`}>
-                  <td className="py-1">{occ.date}</td>
-                  <td className="py-1">{occ.name}</td>
-                  <td className="py-1">{occ.kind}</td>
-                  <td className="py-1">{occ.cycle}</td>
-                  <td className="py-1">{occ.amount}</td>
-                  <td className="py-1">{balanceByDate.get(occ.date)}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+        <Card>
+          <CardHeader>
+            <CardTitle>Stored items (sorted by date)</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <ItemsTable items={items} />
+          </CardContent>
+        </Card>
 
-        <div className="flex flex-col gap-2">
-          <h2 className="text-lg font-semibold text-black dark:text-zinc-50">
-            Balance dips (starting balance {startingBalance})
-          </h2>
-          {dips.length === 0 && (
-            <p className="text-zinc-500">No local minima in this window.</p>
-          )}
-          <table className="w-full text-left text-sm">
-            <thead>
-              <tr>
-                <th className="border-b py-1">Date</th>
-                <th className="border-b py-1">Balance</th>
-              </tr>
-            </thead>
-            <tbody>
-              {dips.map((dip) => (
-                <tr key={dip.date}>
-                  <td className="py-1">{dip.date}</td>
-                  <td className="py-1">{dip.balance}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+        <Card>
+          <CardHeader>
+            <CardTitle>Upcoming activity</CardTitle>
+            <CardDescription>{formatMonthYear(window.start)}</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <OccurrencesTable occurrences={occurrences} balanceByDate={balanceByDate} />
+          </CardContent>
+        </Card>
       </main>
     </div>
   );

@@ -1,9 +1,8 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import { addItem, getItems, setBalanceCheckpoint } from "@/lib/storage";
+import { addItem, setBalanceCheckpoint } from "@/lib/storage";
 import { todayISO } from "@/lib/occurrences";
-import { sampleItems } from "@/lib/seedData";
 import { Cycle, ItemKind } from "@/lib/types";
 
 export async function addItemAction(formData: FormData): Promise<void> {
@@ -20,18 +19,11 @@ export async function addItemAction(formData: FormData): Promise<void> {
 }
 
 export async function setBalanceAction(formData: FormData): Promise<void> {
+  const date = String(formData.get("date") || todayISO());
   setBalanceCheckpoint({
-    date: todayISO(),
+    date,
     balance: Number(formData.get("balance")),
   });
-
-  revalidatePath("/");
-}
-
-export async function seedAction(): Promise<void> {
-  if (getItems().length === 0) {
-    sampleItems().forEach(addItem);
-  }
 
   revalidatePath("/");
 }
