@@ -11,6 +11,11 @@ export function getItems(): CashFlowItem[] {
   return items;
 }
 
+export function resetItems(newItems: CashFlowItem[]): void {
+  items.length = 0;
+  items.push(...newItems);
+}
+
 export function setBalanceCheckpoint(checkpoint: BalanceCheckpoint): void {
   balanceCheckpoint = checkpoint;
 }

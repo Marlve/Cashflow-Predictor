@@ -1,10 +1,11 @@
-import { addItem, getBalanceCheckpoint, getItems, sortItems } from "@/lib/storage";
+import { getBalanceCheckpoint, getItems, sortItems } from "@/lib/storage";
 import { currentMonthWindow, expandAll } from "@/lib/occurrences";
 import { STARTING_BALANCE, findLocalMinima, walkBalance } from "@/lib/forecast";
-import { sampleItems } from "@/lib/seedData";
+import { resetSampleDataAction } from "./actions";
 
 import { AddItemForm } from "@/components/add-item-form";
 import { BalanceChart } from "@/components/balance-chart";
+import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { BillsBreakdownChart } from "@/components/bills-breakdown-chart";
 import { ItemsTable } from "@/components/items-table";
@@ -16,12 +17,6 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { formatCurrency, formatDate, formatMonthYear } from "@/lib/format";
 
 export default function Home() {
-  // In-memory storage starts empty on every server start — seed it straight
-  // away instead of waiting on a manual "load sample data" click.
-  if (getItems().length === 0) {
-    sampleItems().forEach(addItem);
-  }
-
   const items = sortItems(getItems(), "date");
   const window = currentMonthWindow();
   const allOccurrences = expandAll(getItems(), window);
@@ -46,6 +41,12 @@ export default function Home() {
     <div className="flex flex-col flex-1 items-center bg-background font-sans">
       <main className="flex w-full max-w-7xl flex-col gap-6 px-4 py-8 sm:gap-8 sm:px-6 sm:py-12 lg:py-16">
         <SiteHeader />
+
+        <form action={resetSampleDataAction}>
+          <Button type="submit" variant="outline">
+            Reset to sample data
+          </Button>
+        </form>
 
         <SectionCards
           currentBalance={startingBalance}

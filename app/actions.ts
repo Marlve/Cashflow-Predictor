@@ -1,8 +1,9 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import { addItem, setBalanceCheckpoint } from "@/lib/storage";
+import { addItem, resetItems, setBalanceCheckpoint } from "@/lib/storage";
 import { todayISO } from "@/lib/occurrences";
+import { sampleItems } from "@/lib/seedData";
 import { Cycle, ItemKind } from "@/lib/types";
 
 export async function addItemAction(formData: FormData): Promise<void> {
@@ -14,6 +15,12 @@ export async function addItemAction(formData: FormData): Promise<void> {
     startDate: String(formData.get("startDate")),
     kind: formData.get("kind") as ItemKind,
   });
+
+  revalidatePath("/");
+}
+
+export async function resetSampleDataAction(): Promise<void> {
+  resetItems(sampleItems());
 
   revalidatePath("/");
 }
