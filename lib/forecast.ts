@@ -1,6 +1,6 @@
 import { Occurrence } from "./occurrences";
 
-export const STARTING_BALANCE = 5000; // placeholder constant, no UI/persistence yet
+export const STARTING_BALANCE = 5000; // fallback used until a balance checkpoint is saved
 
 export interface BalancePoint {
   date: string; // ISO YYYY-MM-DD

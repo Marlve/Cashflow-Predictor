@@ -1,6 +1,7 @@
-import { CashFlowItem } from "./types";
+import { BalanceCheckpoint, CashFlowItem } from "./types";
 
 const items: CashFlowItem[] = [];
+let balanceCheckpoint: BalanceCheckpoint | null = null;
 
 export function addItem(item: CashFlowItem): void {
   items.push(item);
@@ -8,6 +9,14 @@ export function addItem(item: CashFlowItem): void {
 
 export function getItems(): CashFlowItem[] {
   return items;
+}
+
+export function setBalanceCheckpoint(checkpoint: BalanceCheckpoint): void {
+  balanceCheckpoint = checkpoint;
+}
+
+export function getBalanceCheckpoint(): BalanceCheckpoint | null {
+  return balanceCheckpoint;
 }
 
 export type SortKey = "date" | "month" | "year";

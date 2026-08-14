@@ -1,14 +1,24 @@
-import { addItemAction } from "./actions";
-import { getItems, sortItems } from "@/lib/storage";
+import { addItemAction, seedAction, setBalanceAction } from "./actions";
+import { getBalanceCheckpoint, getItems, sortItems } from "@/lib/storage";
 import { currentMonthWindow, expandAll } from "@/lib/occurrences";
 import { STARTING_BALANCE, findLocalMinima, walkBalance } from "@/lib/forecast";
 
 export default function Home() {
   const items = sortItems(getItems(), "date");
   const window = currentMonthWindow();
-  const occurrences = expandAll(getItems(), window);
-  const trajectory = walkBalance(occurrences, STARTING_BALANCE);
-  const dips = findLocalMinima(trajectory, STARTING_BALANCE);
+  const allOccurrences = expandAll(getItems(), window);
+
+  const checkpoint = getBalanceCheckpoint();
+  const startingBalance = checkpoint ? checkpoint.balance : STARTING_BALANCE;
+  // Charges up to and including the checkpoint date are already reflected in
+  // the checked balance, so the walk only needs what's still ahead.
+  const occurrences = checkpoint
+    ? allOccurrences.filter((occ) => occ.date > checkpoint.date)
+    : allOccurrences;
+
+  const trajectory = walkBalance(occurrences, startingBalance);
+  const dips = findLocalMinima(trajectory, startingBalance);
+  const balanceByDate = new Map(trajectory.map((point) => [point.date, point.balance]));
 
   return (
     <div className="flex flex-col flex-1 items-center bg-zinc-50 font-sans dark:bg-black">
@@ -16,6 +26,14 @@ export default function Home() {
         <h1 className="text-2xl font-semibold text-black dark:text-zinc-50">
           Add cash-flow item
         </h1>
+
+        {items.length === 0 && (
+          <form action={seedAction}>
+            <button type="submit" className="rounded border px-4 py-2">
+              Load sample data
+            </button>
+          </form>
+        )}
 
         <form action={addItemAction} className="flex flex-col gap-3">
           <input name="name" placeholder="Name (e.g. Rent)" required className="border rounded px-3 py-2" />
@@ -66,6 +84,30 @@ export default function Home() {
           </table>
         </div>
 
+        <div className="flex flex-col gap-3">
+          <h2 className="text-lg font-semibold text-black dark:text-zinc-50">
+            Update balance
+          </h2>
+          {checkpoint && (
+            <p className="text-zinc-500">
+              Last checked {checkpoint.date}: {checkpoint.balance}
+            </p>
+          )}
+          <form action={setBalanceAction} className="flex flex-col gap-3">
+            <input
+              name="balance"
+              type="number"
+              step="0.01"
+              placeholder="Current balance"
+              required
+              className="border rounded px-3 py-2"
+            />
+            <button type="submit" className="rounded bg-foreground text-background px-4 py-2">
+              Save today&apos;s balance
+            </button>
+          </form>
+        </div>
+
         <div className="flex flex-col gap-2">
           <h2 className="text-lg font-semibold text-black dark:text-zinc-50">
             Occurrences ({window.start} to {window.end})
@@ -81,6 +123,7 @@ export default function Home() {
                 <th className="border-b py-1">Kind</th>
                 <th className="border-b py-1">Cycle</th>
                 <th className="border-b py-1">Amount</th>
+                <th className="border-b py-1">Balance</th>
               </tr>
             </thead>
             <tbody>
@@ -91,6 +134,7 @@ export default function Home() {
                   <td className="py-1">{occ.kind}</td>
                   <td className="py-1">{occ.cycle}</td>
                   <td className="py-1">{occ.amount}</td>
+                  <td className="py-1">{balanceByDate.get(occ.date)}</td>
                 </tr>
               ))}
             </tbody>
@@ -99,7 +143,7 @@ export default function Home() {
 
         <div className="flex flex-col gap-2">
           <h2 className="text-lg font-semibold text-black dark:text-zinc-50">
-            Balance dips (starting balance {STARTING_BALANCE})
+            Balance dips (starting balance {startingBalance})
           </h2>
           {dips.length === 0 && (
             <p className="text-zinc-500">No local minima in this window.</p>

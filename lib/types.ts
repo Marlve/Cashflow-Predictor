@@ -9,3 +9,8 @@ export interface CashFlowItem {
   startDate: string; // ISO date, YYYY-MM-DD
   kind: ItemKind;
 }
+
+export interface BalanceCheckpoint {
+  date: string; // ISO date, YYYY-MM-DD - the day this balance was checked
+  balance: number;
+}

@@ -135,6 +135,11 @@ export function expandAll(items: CashFlowItem[], window: ForecastWindow): Occurr
   return all;
 }
 
+export function todayISO(): string {
+  const now = new Date();
+  return toISO(now.getUTCFullYear(), now.getUTCMonth() + 1, now.getUTCDate());
+}
+
 export function currentMonthWindow(): ForecastWindow {
   const now = new Date();
   const y = now.getUTCFullYear();
