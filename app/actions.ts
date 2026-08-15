@@ -16,13 +16,20 @@ export async function addItemAction(formData: FormData): Promise<void> {
     kind: formData.get("kind") as ItemKind,
   });
 
-  revalidatePath("/");
+  revalidatePath("/", "layout");
 }
 
 export async function resetSampleDataAction(): Promise<void> {
   resetItems(sampleItems());
 
-  revalidatePath("/");
+  revalidatePath("/", "layout");
+}
+
+export async function resetToZeroAction(): Promise<void> {
+  resetItems([]);
+  setBalanceCheckpoint({ date: todayISO(), balance: 0 });
+
+  revalidatePath("/", "layout");
 }
 
 export async function setBalanceAction(formData: FormData): Promise<void> {
@@ -32,5 +39,5 @@ export async function setBalanceAction(formData: FormData): Promise<void> {
     balance: Number(formData.get("balance")),
   });
 
-  revalidatePath("/");
+  revalidatePath("/", "layout");
 }

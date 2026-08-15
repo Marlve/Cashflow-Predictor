@@ -13,7 +13,8 @@ import { formatCurrency, formatDate, formatDateShort } from "@/lib/format";
 
 interface BalanceChartProps {
   windowStart: string;
-  startingBalance: number;
+  monthStartBalance: number;
+  currentBalance: number;
   checkpointDate: string | null;
   trajectory: BalancePoint[];
   dips: BalancePoint[];
@@ -28,7 +29,8 @@ const chartConfig = {
 
 export function BalanceChart({
   windowStart,
-  startingBalance,
+  monthStartBalance,
+  currentBalance,
   checkpointDate,
   trajectory,
   dips,
@@ -36,15 +38,17 @@ export function BalanceChart({
   const points: BalancePoint[] =
     trajectory[0]?.date === windowStart
       ? trajectory
-      : [{ date: windowStart, balance: startingBalance }, ...trajectory];
+      : [{ date: windowStart, balance: monthStartBalance }, ...trajectory];
 
-  // Trajectory only ever holds occurrences after the checkpoint date, so there's
-  // no point exactly at the checkpoint yet. Insert one (holding the checked
-  // balance) so the "so far" and "forecast" lines meet at a shared vertex
-  // instead of leaving a gap.
+  // Make sure the checkpoint date is always a vertex, even if no occurrence
+  // happens to land on it, so the "actual" and "forecast" segments visibly
+  // meet. Re-sorted afterward since the checkpoint can fall anywhere among
+  // the now fully-shown historical points.
   const withCheckpoint =
-    checkpointDate && checkpointDate !== points[0].date
-      ? [points[0], { date: checkpointDate, balance: startingBalance }, ...points.slice(1)]
+    checkpointDate && !points.some((p) => p.date === checkpointDate)
+      ? [...points, { date: checkpointDate, balance: currentBalance }].sort((a, b) =>
+          a.date.localeCompare(b.date)
+        )
       : points;
 
   const chartData = withCheckpoint.map((point) => ({
@@ -109,7 +113,7 @@ export function BalanceChart({
           activeDot={{ r: 4 }}
         />
         <ReferenceLine
-          y={startingBalance}
+          y={currentBalance}
           stroke="var(--muted-foreground)"
           strokeDasharray="4 4"
           label={{

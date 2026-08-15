@@ -52,6 +52,9 @@ function inRange(dateStr: string, item: CashFlowItem, window: ForecastWindow): b
   return dateStr >= item.startDate && dateStr >= window.start && dateStr <= window.end;
 }
 
+// Loops months and year by converting year into amount of months example, the year 2000 is equal to 24000 months.
+// The for loop already ensures that a billingg past the current month window would not create an occurence
+// however inRange() also makes sure of this. (Techincally only being used by expandWeeks but kept as it is light regardless.)
 function expandMonthly(item: CashFlowItem, window: ForecastWindow): Occurrence[] {
   const start = parseISO(item.startDate);
   const wStart = parseISO(window.start);
