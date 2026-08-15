@@ -4,8 +4,8 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { OccurrencesTable } from "@/components/occurrences-table";
 import { formatCurrency, formatMonthYear } from "@/lib/format";
 
-export default function ListPage() {
-  const { window, occurrences, balanceByDate } = getDashboardData();
+export default async function ListPage() {
+  const { window, occurrences, balanceByDate } = await getDashboardData();
 
   const totalIncome = occurrences
     .filter((occ) => occ.kind === "income")

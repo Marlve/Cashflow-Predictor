@@ -6,8 +6,8 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { MonthCalendar } from "@/components/month-calendar";
 import { formatMonthYear } from "@/lib/format";
 
-export default function CalendarPage() {
-  const { window, allOccurrences } = getDashboardData();
+export default async function CalendarPage() {
+  const { window, allOccurrences } = await getDashboardData();
   const cells = buildMonthGrid(window);
 
   const occurrencesByDate = new Map<string, typeof allOccurrences>();

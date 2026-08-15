@@ -7,8 +7,8 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ItemsTable } from "@/components/items-table";
 import { SetBalanceForm } from "@/components/set-balance-form";
 
-export default function InputsPage() {
-  const { items, checkpoint } = getDashboardData();
+export default async function InputsPage() {
+  const { items, checkpoint } = await getDashboardData();
 
   return (
     <>

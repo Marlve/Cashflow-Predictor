@@ -7,7 +7,7 @@ import { sampleItems } from "@/lib/seedData";
 import { Cycle, ItemKind } from "@/lib/types";
 
 export async function addItemAction(formData: FormData): Promise<void> {
-  addItem({
+  await addItem({
     id: crypto.randomUUID(),
     name: String(formData.get("name")),
     amount: Number(formData.get("amount")),
@@ -20,27 +20,27 @@ export async function addItemAction(formData: FormData): Promise<void> {
 }
 
 export async function removeItemAction(formData: FormData): Promise<void> {
-  removeItem(String(formData.get("id")));
+  await removeItem(String(formData.get("id")));
 
   revalidatePath("/", "layout");
 }
 
 export async function resetSampleDataAction(): Promise<void> {
-  resetItems(sampleItems());
+  await resetItems(sampleItems());
 
   revalidatePath("/", "layout");
 }
 
 export async function resetToZeroAction(): Promise<void> {
-  resetItems([]);
-  setBalanceCheckpoint({ date: todayISO(), balance: 0 });
+  await resetItems([]);
+  await setBalanceCheckpoint({ date: todayISO(), balance: 0 });
 
   revalidatePath("/", "layout");
 }
 
 export async function setBalanceAction(formData: FormData): Promise<void> {
   const date = String(formData.get("date") || todayISO());
-  setBalanceCheckpoint({
+  await setBalanceCheckpoint({
     date,
     balance: Number(formData.get("balance")),
   });

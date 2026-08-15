@@ -1,32 +1,70 @@
+import { cookies } from "next/headers";
 import { BalanceCheckpoint, CashFlowItem } from "./types";
 
-const items: CashFlowItem[] = [];
-let balanceCheckpoint: BalanceCheckpoint | null = null;
+// A plain in-memory module array only survives within a single long-lived
+// Node process (e.g. `next dev`). On Vercel, requests can land on different
+// serverless instances that don't share memory, so state would silently
+// vanish. A cookie survives across instances without needing a database.
+const COOKIE_NAME = "cashflow-data";
+const COOKIE_MAX_AGE = 60 * 60 * 24 * 365; // 1 year
 
-export function addItem(item: CashFlowItem): void {
-  items.push(item);
+interface StoredState {
+  items: CashFlowItem[];
+  checkpoint: BalanceCheckpoint | null;
 }
 
-export function getItems(): CashFlowItem[] {
-  return items;
+async function readState(): Promise<StoredState> {
+  const store = await cookies();
+  const raw = store.get(COOKIE_NAME)?.value;
+  if (!raw) return { items: [], checkpoint: null };
+  try {
+    return JSON.parse(raw) as StoredState;
+  } catch {
+    return { items: [], checkpoint: null };
+  }
 }
 
-export function resetItems(newItems: CashFlowItem[]): void {
-  items.length = 0;
-  items.push(...newItems);
+async function writeState(state: StoredState): Promise<void> {
+  const store = await cookies();
+  store.set(COOKIE_NAME, JSON.stringify(state), {
+    path: "/",
+    maxAge: COOKIE_MAX_AGE,
+    sameSite: "lax",
+  });
 }
 
-export function removeItem(id: string): void {
-  const index = items.findIndex((item) => item.id === id);
-  if (index !== -1) items.splice(index, 1);
+export async function addItem(item: CashFlowItem): Promise<void> {
+  const state = await readState();
+  state.items.push(item);
+  await writeState(state);
 }
 
-export function setBalanceCheckpoint(checkpoint: BalanceCheckpoint): void {
-  balanceCheckpoint = checkpoint;
+export async function getItems(): Promise<CashFlowItem[]> {
+  const state = await readState();
+  return state.items;
 }
 
-export function getBalanceCheckpoint(): BalanceCheckpoint | null {
-  return balanceCheckpoint;
+export async function resetItems(newItems: CashFlowItem[]): Promise<void> {
+  const state = await readState();
+  state.items = newItems;
+  await writeState(state);
+}
+
+export async function removeItem(id: string): Promise<void> {
+  const state = await readState();
+  state.items = state.items.filter((item) => item.id !== id);
+  await writeState(state);
+}
+
+export async function setBalanceCheckpoint(checkpoint: BalanceCheckpoint): Promise<void> {
+  const state = await readState();
+  state.checkpoint = checkpoint;
+  await writeState(state);
+}
+
+export async function getBalanceCheckpoint(): Promise<BalanceCheckpoint | null> {
+  const state = await readState();
+  return state.checkpoint;
 }
 
 // Sorted for display in the stored-items list.

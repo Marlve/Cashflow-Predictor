@@ -25,12 +25,12 @@ export interface DashboardData {
   balanceByDate: Map<string, number>;
 }
 
-export function getDashboardData(): DashboardData {
-  const items = sortItems(getItems());
+export async function getDashboardData(): Promise<DashboardData> {
+  const [rawItems, checkpoint] = await Promise.all([getItems(), getBalanceCheckpoint()]);
+  const items = sortItems(rawItems);
   const window = currentMonthWindow();
-  const allOccurrences = expandAll(getItems(), window);
+  const allOccurrences = expandAll(rawItems, window);
 
-  const checkpoint = getBalanceCheckpoint();
   const currentBalance = checkpoint ? checkpoint.balance : STARTING_BALANCE;
   const monthStartBalance = checkpoint
     ? anchorStartingBalance(allOccurrences, checkpoint)

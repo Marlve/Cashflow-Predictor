@@ -6,7 +6,7 @@ import { BillsBreakdownChart } from "@/components/bills-breakdown-chart";
 import { SectionCards } from "@/components/section-cards";
 import { formatMonthYear } from "@/lib/format";
 
-export default function ReportsPage() {
+export default async function ReportsPage() {
   const {
     window,
     occurrences,
@@ -16,7 +16,7 @@ export default function ReportsPage() {
     trajectory,
     dips,
     leadTimeInsight,
-  } = getDashboardData();
+  } = await getDashboardData();
 
   return (
     <>
