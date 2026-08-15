@@ -57,7 +57,7 @@ export function BillsBreakdownChart({ occurrences }: BillsBreakdownChartProps) {
   ) satisfies ChartConfig;
 
   return (
-    <ChartContainer config={chartConfig} className="mx-auto aspect-square max-h-[240px] sm:max-h-[280px] lg:max-h-[320px]">
+    <ChartContainer config={chartConfig} className="mx-auto aspect-auto h-[240px] w-full sm:h-[280px] lg:h-[320px]">
       <PieChart>
         <ChartTooltip
           content={
