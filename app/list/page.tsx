@@ -1,12 +1,11 @@
 import { getDashboardData } from "@/lib/dashboardData";
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { ItemsTable } from "@/components/items-table";
 import { OccurrencesTable } from "@/components/occurrences-table";
 import { formatCurrency, formatMonthYear } from "@/lib/format";
 
 export default function ListPage() {
-  const { items, window, occurrences, balanceByDate } = getDashboardData();
+  const { window, occurrences, balanceByDate } = getDashboardData();
 
   const totalIncome = occurrences
     .filter((occ) => occ.kind === "income")
@@ -54,15 +53,6 @@ export default function ListPage() {
         </CardHeader>
         <CardContent>
           <OccurrencesTable occurrences={occurrences} balanceByDate={balanceByDate} />
-        </CardContent>
-      </Card>
-
-      <Card>
-        <CardHeader>
-          <CardTitle>Stored items (sorted by date)</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <ItemsTable items={items} />
         </CardContent>
       </Card>
     </>

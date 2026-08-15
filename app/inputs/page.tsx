@@ -3,10 +3,12 @@ import { resetSampleDataAction, resetToZeroAction } from "../actions";
 
 import { AddItemForm } from "@/components/add-item-form";
 import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { ItemsTable } from "@/components/items-table";
 import { SetBalanceForm } from "@/components/set-balance-form";
 
 export default function InputsPage() {
-  const { checkpoint } = getDashboardData();
+  const { items, checkpoint } = getDashboardData();
 
   return (
     <>
@@ -27,6 +29,15 @@ export default function InputsPage() {
         <AddItemForm />
         <SetBalanceForm checkpoint={checkpoint} />
       </div>
+
+      <Card>
+        <CardHeader>
+          <CardTitle>Stored items (sorted by date)</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <ItemsTable items={items} />
+        </CardContent>
+      </Card>
     </>
   );
 }

@@ -26,7 +26,7 @@ export interface DashboardData {
 }
 
 export function getDashboardData(): DashboardData {
-  const items = sortItems(getItems(), "date");
+  const items = sortItems(getItems());
   const window = currentMonthWindow();
   const allOccurrences = expandAll(getItems(), window);
 

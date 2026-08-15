@@ -1,4 +1,8 @@
+import { Trash2 } from "lucide-react";
+
+import { removeItemAction } from "@/app/actions";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { KindBadge } from "@/components/kind-badge";
 import {
   Table,
@@ -29,6 +33,9 @@ export function ItemsTable({ items }: ItemsTableProps) {
           <TableHead>Kind</TableHead>
           <TableHead>Cycle</TableHead>
           <TableHead className="text-right">Amount</TableHead>
+          <TableHead className="w-0">
+            <span className="sr-only">Remove</span>
+          </TableHead>
         </TableRow>
       </TableHeader>
       <TableBody>
@@ -44,6 +51,20 @@ export function ItemsTable({ items }: ItemsTableProps) {
             </TableCell>
             <TableCell className="text-right tabular-nums">
               {formatCurrency(item.amount)}
+            </TableCell>
+            <TableCell>
+              <form action={removeItemAction}>
+                <input type="hidden" name="id" value={item.id} />
+                <Button
+                  type="submit"
+                  variant="ghost"
+                  size="icon-sm"
+                  className="text-muted-foreground hover:bg-destructive/10 hover:text-destructive"
+                >
+                  <Trash2 />
+                  <span className="sr-only">Remove {item.name}</span>
+                </Button>
+              </form>
             </TableCell>
           </TableRow>
         ))}

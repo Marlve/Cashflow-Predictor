@@ -16,6 +16,11 @@ export function resetItems(newItems: CashFlowItem[]): void {
   items.push(...newItems);
 }
 
+export function removeItem(id: string): void {
+  const index = items.findIndex((item) => item.id === id);
+  if (index !== -1) items.splice(index, 1);
+}
+
 export function setBalanceCheckpoint(checkpoint: BalanceCheckpoint): void {
   balanceCheckpoint = checkpoint;
 }
@@ -24,25 +29,7 @@ export function getBalanceCheckpoint(): BalanceCheckpoint | null {
   return balanceCheckpoint;
 }
 
-export type SortKey = "date" | "month" | "year";
-
-// Always sort by dates although year and month could be use to sort for the UI later if I may decide so.
-export function sortItems(list: CashFlowItem[], key: SortKey): CashFlowItem[] {
-  const sorted = [...list];
-  switch (key) {
-    case "date":
-      sorted.sort((a, b) => a.startDate.localeCompare(b.startDate));
-      break;
-    case "year":
-      sorted.sort(
-        (a, b) => new Date(a.startDate).getUTCFullYear() - new Date(b.startDate).getUTCFullYear()
-      );
-      break;
-    case "month":
-      sorted.sort(
-        (a, b) => new Date(a.startDate).getUTCMonth() - new Date(b.startDate).getUTCMonth()
-      );
-      break;
-  }
-  return sorted;
+// Sorted for display in the stored-items list.
+export function sortItems(list: CashFlowItem[]): CashFlowItem[] {
+  return [...list].sort((a, b) => a.startDate.localeCompare(b.startDate));
 }
