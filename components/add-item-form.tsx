@@ -11,8 +11,8 @@ export function AddItemForm() {
       <CardHeader>
         <CardTitle>Add cash-flow item</CardTitle>
       </CardHeader>
-      <CardContent>
-        <form action={addItemAction} className="flex flex-col gap-4">
+      <CardContent className="flex flex-1 flex-col">
+        <form action={addItemAction} className="flex flex-1 flex-col gap-4">
           <div className="flex flex-col gap-1.5">
             <Label htmlFor="name">Name</Label>
             <Input id="name" name="name" placeholder="e.g. Rent" required />
@@ -59,7 +59,7 @@ export function AddItemForm() {
             </div>
           </div>
 
-          <Button type="submit" className="mt-1">
+          <Button type="submit" className="mt-auto">
             Add item
           </Button>
         </form>

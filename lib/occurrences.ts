@@ -1,11 +1,10 @@
-import { CashFlowItem, Cycle, ItemKind } from "./types";
+import { CashFlowItem } from "./types";
 
-export interface Occurrence {
+// Same fields as CashFlowItem, except `id` (an item's own identity) becomes
+// `itemId` (a reference back to it), and `startDate` (the recurrence anchor)
+// becomes `date` (one computed, expanded instance of that recurrence).
+export interface Occurrence extends Omit<CashFlowItem, "id" | "startDate"> {
   date: string; // ISO YYYY-MM-DD
-  amount: number;
-  name: string;
-  cycle: Cycle;
-  kind: ItemKind;
   itemId: string;
 }
 

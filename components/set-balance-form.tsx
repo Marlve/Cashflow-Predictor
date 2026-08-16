@@ -22,8 +22,8 @@ export function SetBalanceForm({ checkpoint }: SetBalanceFormProps) {
           </p>
         )}
       </CardHeader>
-      <CardContent>
-        <form action={setBalanceAction} className="flex flex-col gap-4">
+      <CardContent className="flex flex-1 flex-col">
+        <form action={setBalanceAction} className="flex flex-1 flex-col gap-4">
           <div className="grid grid-cols-2 gap-3">
             <div className="flex flex-col gap-1.5">
               <Label htmlFor="balance">Current balance</Label>
@@ -36,7 +36,7 @@ export function SetBalanceForm({ checkpoint }: SetBalanceFormProps) {
             </div>
           </div>
 
-          <Button type="submit" className="mt-1">
+          <Button type="submit" className="mt-auto">
             Save balance
           </Button>
         </form>
